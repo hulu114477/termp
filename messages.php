@@ -167,7 +167,7 @@ $conn->close();
                                 <strong><?php echo $msg['sender_name']; ?>:</strong>
                                 <span><?php echo $msg['message_time']; ?></span>
                             </div>
-                            <p><?php echo $msg['message_text']; ?></p>
+                            <p><?php echo htmlspecialchars($msg['message_text']); ?></p>
                         </li>
                     <?php endforeach; ?>
                 </ul>
