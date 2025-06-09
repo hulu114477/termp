@@ -12,7 +12,7 @@ $my_only     = (isset($_GET['my_only']) && $_GET['my_only'] == '1');
 // בסיס השאילתה והפרמטרים
 $sql = "
     SELECT jp.placement_id, jp.placement_date, s.shift_name,
-           jp.Available_places_away, jp.Vacancies_return,
+           jp.available_places_to_work, jp.available_places_from_work,
            e.employee_name, e.address, e.phone_number, e.has_car, jp.employee_id
     FROM job_placement jp
     JOIN employees e ON jp.employee_id = e.employee_id
