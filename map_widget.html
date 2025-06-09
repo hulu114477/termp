@@ -64,7 +64,7 @@ async function renderMap() {
                     <span>מוצא: ${ride.address}</span><br>
                     <span>תאריך: ${ride.placement_date}</span><br>
                     <span>משמרת: ${ride.shift_name}</span><br>
-                    <span>פנוי הלוך: ${ride.Available_places_away} | חזור: ${ride.Vacancies_return}</span>`);
+                    <span>פנוי הלוך: ${ride.available_places_to_work} | חזור: ${ride.available_places_from_work}</span>`);
                 L.polyline([fromLoc, dest], {color: ride.is_me?'red':'blue', weight:4}).addTo(map);
             }
         }
