@@ -1,0 +1,75 @@
+<!-- map_widget.html -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
+    #map { height: 400px; width: 100%; margin: 0 auto; border-radius: 16px; }
+</style>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let map;
+const FACTORY_ADDRESS = "מסריק 10, ירושלים";
+const ICONS = {
+    factory: 'https://cdn-icons-png.flaticon.com/512/190/190411.png',
+    user:    'https://cdn-icons-png.flaticon.com/512/149/149060.png',
+    me:      'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+};
+
+// גיאוקוד כתובת ע"י Nominatim
+const geocode = addr =>
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr + ', ישראל'))
+        .then(r => r.json())
+        .then(data => data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null)
+        .catch(() => null);
+
+// בניית פרמטרים מה-URL
+const mapParams = () => {
+    const u = new URLSearchParams(location.search);
+    return '?' + ['direction','shift_name','my_only'].filter(p=>u.get(p)).map(p=>p+'='+encodeURIComponent(u.get(p))).join('&');
+};
+
+async function renderMap() {
+    if (map) map.remove();
+    map = L.map('map').setView([31.8,35.1], 8);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18, attribution:'© OpenStreetMap'}).addTo(map);
+
+    // יעד: המפעל
+    const dest = await geocode(FACTORY_ADDRESS);
+    if (!dest) return alert("לא הצלחנו לאתר את כתובת המפעל.");
+    let bounds = [dest];
+    L.marker(dest, {icon: L.icon({iconUrl: ICONS.factory, iconSize:[40,40], iconAnchor:[20,40]})})
+        .addTo(map).bindPopup("<b>המפעל: מסריק 10, ירושלים</b>");
+
+    // מיקום המשתמש אם קיים
+    if (typeof currentUserAddress === "string" && currentUserAddress.length > 0) {
+        const userLoc = await geocode(currentUserAddress);
+        if (userLoc) {
+            bounds.push(userLoc);
+            L.marker(userLoc, {icon: L.icon({iconUrl: ICONS.user, iconSize:[40,40], iconAnchor:[20,40]})})
+                .addTo(map).bindPopup("<b>המיקום שלי</b><br>"+currentUserAddress).openPopup();
+        }
+    }
+
+    // שליפת נתוני טרמפים מהשרת
+    fetch("rides_map.php"+mapParams())
+    .then(r => r.json())
+    .then(async rides => {
+        for (let ride of rides) {
+            let fromLoc = await geocode(ride.address);
+            if (fromLoc) {
+                bounds.push(fromLoc);
+                let icon = ride.is_me ? L.icon({iconUrl: ICONS.me, iconSize:[38,38], iconAnchor:[19,38]}) : undefined;
+                L.marker(fromLoc, icon ? {icon} : {})
+                    .addTo(map)
+                    .bindPopup(`<b>${ride.employee_name}${ride.is_me?' (אני)':''}</b><br>
+                    <span>מוצא: ${ride.address}</span><br>
+                    <span>תאריך: ${ride.placement_date}</span><br>
+                    <span>משמרת: ${ride.shift_name}</span><br>
+                    <span>פנוי הלוך: ${ride.Available_places_away} | חזור: ${ride.Vacancies_return}</span>`);
+                L.polyline([fromLoc, dest], {color: ride.is_me?'red':'blue', weight:4}).addTo(map);
+            }
+        }
+        if (bounds.length > 1) map.fitBounds(bounds, {padding:[20,20]});
+    });
+}
+document.addEventListener("DOMContentLoaded", renderMap);
+</script>
