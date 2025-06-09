@@ -90,7 +90,7 @@ function printError($msg) {
                 </div>
                 <div class="form-group">
                     <label for="password">סיסמת עובד:</label>
-                    <input type="password" name="password" required 
+                    <input type="password" name="password" required> 
                 </div>
                 <button type="submit" name="login" class="btn-primary">התחבר כעובד</button>
             </form>
