@@ -64,7 +64,7 @@ if (isset($_POST['delete_ride'])) {
                         : "שלום הטרמפ מהעבודה הביתה בתאריך $ride_date במשמרת $shift_name בוטל על ידי הנהג נשלח בתאריך $cancellation_date";
 
                     $insert_message_stmt = $conn->prepare("
-                        INSERT INTO messages (placement_id, sender_id, recipient_id, messages_text, message_time, direction)
+                        INSERT INTO messages (placement_id, sender_id, recipient_id, message_text, message_time, direction)
                         VALUES (?, ?, ?, ?, NOW(), ?)
                     ");
                     if (!$insert_message_stmt) {
